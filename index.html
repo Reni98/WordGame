@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<title>Szó kitaláló játék</title>
+</head>
+
+<body>
+
+<h2>Szó kitaláló játék</h2>
+
+<input type="text" id="nev" placeholder="Add meg a neved">
+<button onclick="mentNev()">Mentés</button>
+
+<p id="jatekos"></p>
+
+<h3 id="szo"></h3>
+
+<input type="text" id="betu" maxlength="1" placeholder="Betű">
+<button onclick="tipp()">Tipp</button>
+
+<p id="uzenet"></p>
+
+<p id="pont"></p>
+
+<div id="eredmenyek"></div>
+
+<button id="uj" onclick="ujJatek()" style="display:none">Játszom</button>
+<button id="kilep" onclick="kilepes()" style="display:none">Kilépés</button>
+
+<script>
+
+let szavak = ["alma","korte","barack","szilva","dinnye"]
+
+let kitalalando=""
+let megjelenites=[]
+let pont=10
+
+
+
+function mentNev(){
+
+    let nev=document.getElementById("nev").value
+
+    localStorage.setItem("jatekosNev",nev)
+
+    document.getElementById("jatekos").innerText=
+    "Játékos: "+localStorage.getItem("jatekosNev")
+
+    ujJatek()
+
+    listaMegjelenit()
+}
+
+
+
+function ujJatek(){
+
+    let index=Math.floor(Math.random()*szavak.length)
+
+    kitalalando=szavak[index]
+
+    console.log("Kitalálandó szó:",kitalalando)
+
+    megjelenites=[]
+    pont=10
+
+    for(let i=0;i<kitalalando.length;i++){
+
+        megjelenites.push("_")
+
+    }
+
+    frissit()
+
+    document.getElementById("pont").innerText="Pont: "+pont
+    document.getElementById("uzenet").innerText=""
+
+    document.getElementById("uj").style.display="none"
+    document.getElementById("kilep").style.display="none"
+}
+
+
+
+function frissit(){
+
+    document.getElementById("szo").innerText=
+    megjelenites.join(" ")
+
+}
+
+
+
+function tipp(){
+
+    let betu=document.getElementById("betu").value
+
+    let talalat=false
+
+    for(let i=0;i<kitalalando.length;i++){
+
+        if(kitalalando[i]===betu){
+
+            megjelenites[i]=betu
+
+            talalat=true
+        }
+    }
+
+    if(talalat){
+
+        document.getElementById("uzenet").innerText="Van ilyen betű!"
+
+    }
+    else{
+
+        pont--
+
+        document.getElementById("uzenet").innerText="Nincs ilyen betű!"
+
+    }
+
+    document.getElementById("pont").innerText="Pont: "+pont
+
+    frissit()
+
+    ellenorzes()
+
+}
+
+
+
+function ellenorzes(){
+
+    if(!megjelenites.includes("_")){
+
+        document.getElementById("uzenet").innerText="Kitaláltad!"
+
+        jatekMent()
+
+    }
+
+    if(pont<=0){
+
+        document.getElementById("uzenet").innerText=
+        "Vesztettél! A szó: "+kitalalando
+
+        pont=0
+
+        jatekMent()
+
+    }
+
+}
+
+
+
+function jatekMent(){
+
+    let nev=localStorage.getItem("jatekosNev")
+
+    let ujEredmeny={
+
+        nev:nev,
+        pont:pont,
+        szo:kitalalando
+
+    }
+
+    let jatekok=localStorage.getItem("jatekok")
+
+    if(jatekok==null){
+
+        jatekok=[]
+
+    }
+    else{
+
+        jatekok=JSON.parse(jatekok)
+
+    }
+
+    jatekok.push(ujEredmeny)
+
+    localStorage.setItem("jatekok",JSON.stringify(jatekok))
+
+    listaMegjelenit()
+
+    document.getElementById("uj").style.display="inline"
+    document.getElementById("kilep").style.display="inline"
+
+}
+
+
+
+function listaMegjelenit(){
+
+    let jatekok=JSON.parse(localStorage.getItem("jatekok"))
+
+    if(jatekok==null){
+        return
+    }
+
+    let szoveg="<h3>Eddigi játékok</h3>"
+
+    for(let i=0;i<jatekok.length;i++){
+
+        szoveg+=
+        "Játékos: "+jatekok[i].nev+
+        " | Pont: "+jatekok[i].pont+
+        " | Szó: "+jatekok[i].szo+
+        "<br>"
+    }
+
+    document.getElementById("eredmenyek").innerHTML=szoveg
+}
+
+
+
+function kilepes(){
+
+    localStorage.removeItem("jatekosNev")
+
+    document.getElementById("uzenet").innerText="Kiléptél a játékból."
+
+}
+
+</script>
+
+</body>
+</html>
